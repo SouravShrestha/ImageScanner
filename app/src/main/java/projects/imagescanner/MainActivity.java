@@ -1,6 +1,7 @@
 package projects.imagescanner;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
@@ -26,17 +27,23 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.derohimat.sweetalertdialog.SweetAlertDialog;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
+import com.yarolegovich.lovelydialog.LovelyTextInputDialog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -44,10 +51,10 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recentList;
     ImageView digital,handwritten;
     ArrayList<String> titles = new ArrayList<>();
-    ArrayList<Integer> images = new ArrayList<>();
+    ArrayList<String> images = new ArrayList<>();
     ArrayList<String> dates = new ArrayList<>();
     ArrayList<RecentItems> recentItemsList = new ArrayList<>();
-
+    SweetAlertDialog pDialog;
     String baseUrl = "http://192.168.43.135:5000/";
     String URL = "http://192.168.43.135/index.php";
 
@@ -72,6 +79,10 @@ public class MainActivity extends AppCompatActivity {
         recentList.setAdapter(myAdapterRecent);
         digital = findViewById(R.id.digial);
         handwritten = findViewById(R.id.hand);
+        pDialog = new SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE);
+        pDialog.getProgressHelper().setBarColor(Color.parseColor("#EB5757"));
+        pDialog.setTitleText("Your File Is Being Processed.!");
+        pDialog.setCancelable(false);
         digital.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -97,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 Uri resultUri = result.getUri();
                 try {
+                    pDialog.show();
                     UploadImage(MediaStore.Images.Media.getBitmap(getContentResolver(), resultUri));
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -117,6 +129,13 @@ public class MainActivity extends AppCompatActivity {
 
     class CallPython extends AsyncTask{
 
+        Bitmap bitmap;
+        String jsonResponse = "";
+
+        public  CallPython(Bitmap bitmap) {
+            this.bitmap = bitmap;
+        }
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -124,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Object doInBackground(Object[] objects) {
-            String jsonResponse = "";
             HttpURLConnection urlConnection = null;
             InputStream inputStream = null;
             String url = Uri.parse(baseUrl).toString();
@@ -162,6 +180,26 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Object o) {
+            pDialog.hide();
+//            new LovelyTextInputDialog(MainActivity.this, R.style.TintTheme)
+//                    .setTopColorRes(R.color.colorAccent).setIcon(R.drawable.success_circle)
+//                    .setTitle("Enter Title For The Document")
+//                    .setHint(String.valueOf(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())))
+//                    .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
+//                        @Override
+//                        public void onTextInputConfirmed(String text) {
+//                            String title;
+//                            if(text==null || text.length()==0)
+//                                title  = "Document" + String.valueOf(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
+//                            else {
+//                                title = text;
+//                                title.replace("  "," ");
+//                            }
+////                            addItems(getStringImage(bitmap),title,new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date()));
+//                        }
+//                    })
+//                    .show();
+            Toast.makeText(MainActivity.this, jsonResponse, Toast.LENGTH_LONG).show();
             super.onPostExecute(o);
         }
     }
@@ -188,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
                 String s = response.trim();
                 if (!s.equalsIgnoreCase("Loi")) {
                     Log.d("finalResult","eq");
-                    new CallPython().execute();
+                    new CallPython(bitmap).execute();
                 } else {
                     Toast.makeText(MainActivity.this, "Failed To Upload !", Toast.LENGTH_SHORT).show();
                 }
@@ -211,7 +249,9 @@ public class MainActivity extends AppCompatActivity {
         requestQueue.add(stringRequest);
     }
 
-    public void addItems(String title,int image,String date) {
+
+
+    public void addItems(String image,String title,String date) {
        images.add(image);
        titles.add(title);
        dates.add(date);
