@@ -21,6 +21,10 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.github.Pradyuman7:ChocoBar:V1.0'
+    implementation 'uk.co.chrisjenx:calligraphy:2.3.0'
+    implementation 'com.github.derohimat:sweet-alert-dialog:1.5.5'
+    implementation 'com.yarolegovich:lovely-dialog:1.1.0'
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.7.0'
     implementation 'com.mcxiaoke.volley:library:1.0.19'
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'

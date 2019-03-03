@@ -28,9 +28,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.derohimat.sweetalertdialog.SweetAlertDialog;
+import com.pd.chocobar.ChocoBar;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
-import com.yarolegovich.lovelydialog.LovelyTextInputDialog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -45,7 +45,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ItemClickListener {
 
     MyAdapterRecent myAdapterRecent;
     RecyclerView recentList;
@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<String> titles = new ArrayList<>();
     ArrayList<String> images = new ArrayList<>();
     ArrayList<String> dates = new ArrayList<>();
+    ArrayList<String> bodies = new ArrayList<>();
     ArrayList<RecentItems> recentItemsList = new ArrayList<>();
     SweetAlertDialog pDialog;
     String baseUrl = "http://192.168.43.135:5000/";
@@ -67,15 +68,18 @@ public class MainActivity extends AppCompatActivity {
         recentItem.setTitle("First Document");
         recentItem.setImage(R.drawable.img_two);
         recentItem.setDate("28-02-2019");
+        recentItem.setBody("Hello");
         RecentItems recentItems = new RecentItems();
         recentItems.setTitle("Second Document");
+        recentItems.setDate("28-02-2019");
         recentItems.setImage(R.drawable.img_one);
-        recentItems.setDate("30-07-2018");
+        recentItems.setBody("And I want to send that variable to the activity B, so I create a new intent and use the putExtra method");
         recentItemsList.add(recentItem);
         recentItemsList.add(recentItems);
         recentList.setHasFixedSize(true);
         recentList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         myAdapterRecent = new MyAdapterRecent(recentItemsList);
+        myAdapterRecent.setClickListener(MainActivity.this);
         recentList.setAdapter(myAdapterRecent);
         digital = findViewById(R.id.digial);
         handwritten = findViewById(R.id.hand);
@@ -125,6 +129,21 @@ public class MainActivity extends AppCompatActivity {
         byte[] imagebyte = ba.toByteArray();
         String encode = Base64.encodeToString(imagebyte,Base64.DEFAULT);
         return encode;
+    }
+
+    @Override
+    public void onClick(View view, int position) {
+        RecentItems passingList = recentItemsList.get(position);
+        String passingTitle = passingList.getTitle();
+        String passingDate = passingList.getDate();
+        String passingBody = passingList.getBody();
+        ArrayList<String> listPassed = new ArrayList<>();
+        listPassed.add(passingTitle);
+        listPassed.add(passingDate);
+        listPassed.add(passingBody);
+        Intent goToEdit = new Intent(this, EditOrSaveActivity.class);
+        goToEdit.putExtra("passedValues",listPassed);
+        startActivity(goToEdit);
     }
 
     class CallPython extends AsyncTask{
@@ -181,25 +200,10 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Object o) {
             pDialog.hide();
-//            new LovelyTextInputDialog(MainActivity.this, R.style.TintTheme)
-//                    .setTopColorRes(R.color.colorAccent).setIcon(R.drawable.success_circle)
-//                    .setTitle("Enter Title For The Document")
-//                    .setHint(String.valueOf(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())))
-//                    .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
-//                        @Override
-//                        public void onTextInputConfirmed(String text) {
-//                            String title;
-//                            if(text==null || text.length()==0)
-//                                title  = "Document" + String.valueOf(TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()));
-//                            else {
-//                                title = text;
-//                                title.replace("  "," ");
-//                            }
-////                            addItems(getStringImage(bitmap),title,new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date()));
-//                        }
-//                    })
-//                    .show();
-            Toast.makeText(MainActivity.this, jsonResponse, Toast.LENGTH_LONG).show();
+            ChocoBar.builder().setBackgroundColor(Color.parseColor("#27AE60"))  .setActivity(MainActivity.this).setTextSize(18)
+                    .setTextColor(Color.parseColor("#FFFFFF"))
+                    .setText("Success "+ jsonResponse)
+                    .setDuration(ChocoBar.LENGTH_INDEFINITE).build().show();
             super.onPostExecute(o);
         }
     }

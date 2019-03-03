@@ -4,7 +4,17 @@ public class RecentItems {
 
     int image;
     String title;
+
+    String body;
     String date;
+
+    public String getBody() {
+        return body;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
+    }
 
     public int getImage() {
         return image;

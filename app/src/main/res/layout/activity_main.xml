@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    tools:ignore="MissingPrefix"
     android:background="@color/white"
     tools:context=".MainActivity" >
 
@@ -28,10 +29,10 @@
 
             <TextView
                 android:id="@+id/appTitle"
+                fontPath="fonts/Roboto-Bold.ttf"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:layout_marginLeft="30dp"
-                android:fontFamily="sans-serif-condensed"
                 android:gravity="center_vertical"
                 android:paddingLeft="20dp"
                 android:text="Image Scanner"
@@ -63,14 +64,14 @@
 
         <TextView
             android:id="@+id/titleMain"
+            fontPath="fonts/roboto_regular.ttf"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-condensed"
             android:gravity="center"
             android:text="What Would You Like To Scan ?"
             android:textAllCaps="false"
             android:textColor="@color/white"
-            android:textSize="26sp"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
     </RelativeLayout>
@@ -98,22 +99,22 @@
 
             <TextView
                 android:id="@+id/textDigital"
-                android:layout_width="match_parent"
+                fontPath="fonts/roboto_regular.ttf"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="15dp"
-                android:fontFamily="sans-serif-condensed"
                 android:gravity="center_horizontal"
                 android:text="Digital Text"
                 android:textColor="@color/white"
-                android:textSize="20sp" />
+                android:textSize="22sp" />
 
             <ImageView
                 android:id="@+id/digial"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:elevation="1dp"
                 android:layout_gravity="center_horizontal"
                 android:background="@drawable/ellipse"
+                android:elevation="1dp"
                 android:padding="25dp"
                 app:srcCompat="@drawable/digital" />
 
@@ -128,22 +129,22 @@
 
             <TextView
                 android:id="@+id/textHand"
-                android:layout_width="match_parent"
+                fontPath="fonts/roboto_regular.ttf"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="15dp"
-                android:fontFamily="sans-serif-condensed"
                 android:gravity="center_horizontal"
                 android:text="Handwriting"
                 android:textColor="@color/white"
-                android:textSize="20sp" />
+                android:textSize="22sp" />
 
             <ImageView
                 android:id="@+id/hand"
-                android:elevation="1dp"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:layout_gravity="center_horizontal"
                 android:background="@drawable/ellipse"
+                android:elevation="1dp"
                 android:padding="25dp"
                 app:srcCompat="@drawable/handwritten" />
 
@@ -153,30 +154,31 @@
     <RelativeLayout
         android:id="@+id/r1"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
         android:layout_below="@+id/relCon1"
         android:layout_centerVertical="true"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="20dp">
 
         <TextView
             android:id="@+id/titleRecentImages"
+            fontPath="fonts/roboto_regular.ttf"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
             android:layout_marginLeft="15dp"
-            android:layout_marginTop="15dp"
-            android:layout_marginBottom="15dp"
-            android:fontFamily="sans-serif-condensed"
             android:text="Recent Images"
             android:textAllCaps="false"
             android:textColor="#333333"
-            android:textSize="24sp"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/recentAll"
+            fontPath="fonts/Roboto-Bold.ttf"
             android:layout_width="wrap_content"
             android:layout_height="25dp"
             android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="15dp"
             android:background="@drawable/buttonviewall"
@@ -190,31 +192,39 @@
         android:id="@+id/recentView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/r1" />
+        android:layout_below="@id/r1"
+        android:layout_marginTop="15dp"
+        android:paddingLeft="10dp" />
 
     <RelativeLayout
         android:id="@+id/r2"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
         android:layout_below="@id/recentView"
-        android:layout_margin="15dp">
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="15dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="15dp">
 
         <TextView
             android:id="@+id/titleSavedDocuments"
+            fontPath="fonts/roboto_regular.ttf"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-condensed"
+            android:layout_alignParentBottom="true"
             android:text="Saved Documents"
             android:textAllCaps="false"
             android:textColor="#333333"
-            android:textSize="24sp"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/documentAll"
+            fontPath="fonts/Roboto-Bold.ttf"
             android:layout_width="wrap_content"
             android:layout_height="25dp"
             android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
             android:layout_centerVertical="true"
             android:background="@drawable/buttonviewall"
             android:text="View All"
@@ -226,6 +236,8 @@
         android:id="@+id/savedDocuments"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/r2" />
+        android:layout_below="@+id/r2"
+        android:layout_marginTop="15dp"
+        android:paddingLeft="10dp" />
 
 </RelativeLayout>
