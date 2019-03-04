@@ -50,14 +50,11 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
     MyAdapterRecent myAdapterRecent;
     RecyclerView recentList;
     ImageView digital,handwritten;
-    ArrayList<String> titles = new ArrayList<>();
-    ArrayList<String> images = new ArrayList<>();
-    ArrayList<String> dates = new ArrayList<>();
-    ArrayList<String> bodies = new ArrayList<>();
     ArrayList<RecentItems> recentItemsList = new ArrayList<>();
     SweetAlertDialog pDialog;
     String baseUrl = "http://192.168.43.135:5000/";
     String URL = "http://192.168.43.135/index.php";
+    int curr = 0 ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,18 +87,22 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
         digital.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                curr = 0;
                 CropImage.activity()
                         .setGuidelines(CropImageView.Guidelines.ON)
                         .start(MainActivity.this);
+                baseUrl = "http://192.168.43.135:90/";
             }
         });
 
         handwritten.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                curr = 1;
                 CropImage.activity()
                         .setGuidelines(CropImageView.Guidelines.ON)
                         .start(MainActivity.this);
+                baseUrl = "http://192.168.43.135:5000/";
             }
         });
     }
@@ -144,6 +145,36 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
         Intent goToEdit = new Intent(this, EditOrSaveActivity.class);
         goToEdit.putExtra("passedValues",listPassed);
         startActivity(goToEdit);
+    }
+
+    private void UploadImage(final Bitmap bitmap) {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                String s = response.trim();
+                if (!s.equalsIgnoreCase("Loi")) {
+                    Log.d("finalResult","eq");
+                    new CallPython(bitmap).execute();
+                } else {
+                    Toast.makeText(MainActivity.this, "Failed To Upload !", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(MainActivity.this, error + "", Toast.LENGTH_SHORT).show();
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                String image = getStringImage(bitmap);
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("IMG", image);
+                return params;
+            }
+        };
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(stringRequest);
     }
 
     class CallPython extends AsyncTask{
@@ -204,6 +235,13 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
                     .setTextColor(Color.parseColor("#FFFFFF"))
                     .setText("Success "+ jsonResponse)
                     .setDuration(ChocoBar.LENGTH_INDEFINITE).build().show();
+            RecentItems addItems = new RecentItems();
+            addItems.setTitle("Document");
+            addItems.setImage(R.drawable.img_two);
+            addItems.setDate("28-02-2019");
+            addItems.setBody(jsonResponse);
+            recentItemsList.add(addItems);
+            myAdapterRecent.notifyDataSetChanged();
             super.onPostExecute(o);
         }
     }
@@ -221,43 +259,5 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
             }
         }
         return output.toString();
-    }
-
-    private void UploadImage(final Bitmap bitmap) {
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                String s = response.trim();
-                if (!s.equalsIgnoreCase("Loi")) {
-                    Log.d("finalResult","eq");
-                    new CallPython(bitmap).execute();
-                } else {
-                    Toast.makeText(MainActivity.this, "Failed To Upload !", Toast.LENGTH_SHORT).show();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MainActivity.this, error + "", Toast.LENGTH_SHORT).show();
-            }
-        }) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                String image = getStringImage(bitmap);
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("IMG", image);
-                return params;
-            }
-        };
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        requestQueue.add(stringRequest);
-    }
-
-
-
-    public void addItems(String image,String title,String date) {
-       images.add(image);
-       titles.add(title);
-       dates.add(date);
     }
 }
