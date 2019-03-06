@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -47,10 +48,10 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements ItemClickListener {
 
-    MyAdapterRecent myAdapterRecent;
+    public static MyAdapterRecent myAdapterRecent;
     RecyclerView recentList;
     ImageView digital,handwritten;
-    ArrayList<RecentItems> recentItemsList = new ArrayList<>();
+    public static ArrayList<RecentItems> recentItemsList = new ArrayList<>();
     SweetAlertDialog pDialog;
     String baseUrl = "http://192.168.43.135:5000/";
     String URL = "http://192.168.43.135/index.php";
@@ -142,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
         listPassed.add(passingTitle);
         listPassed.add(passingDate);
         listPassed.add(passingBody);
+        listPassed.add(String.valueOf(position));
         Intent goToEdit = new Intent(this, EditOrSaveActivity.class);
         goToEdit.putExtra("passedValues",listPassed);
         startActivity(goToEdit);
@@ -162,7 +164,18 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(MainActivity.this, error + "", Toast.LENGTH_SHORT).show();
+                pDialog.hide();
+//                Toast.makeText(MainActivity.this, error + "", Toast.LENGTH_SHORT).show();
+                final Snackbar chocoBar = ChocoBar.builder().setBackgroundColor(Color.parseColor("#F44336"))  .setActivity(MainActivity.this).setTextSize(18)
+                        .setTextColor(Color.parseColor("#FFFFFF")).setText("Unable To Connect To Server. Please Check Your Connection!")
+                        .setDuration(ChocoBar.LENGTH_INDEFINITE).build().setActionTextColor(Color.parseColor("#FFFFFF"));
+                chocoBar.setAction("Dismiss",new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        chocoBar.dismiss();
+                    }
+                });
+                chocoBar.show();
             }
         }) {
             @Override
@@ -231,17 +244,32 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
         @Override
         protected void onPostExecute(Object o) {
             pDialog.hide();
-            ChocoBar.builder().setBackgroundColor(Color.parseColor("#27AE60"))  .setActivity(MainActivity.this).setTextSize(18)
-                    .setTextColor(Color.parseColor("#FFFFFF"))
-                    .setText("Success "+ jsonResponse)
-                    .setDuration(ChocoBar.LENGTH_INDEFINITE).build().show();
-            RecentItems addItems = new RecentItems();
-            addItems.setTitle("Document");
-            addItems.setImage(R.drawable.img_two);
-            addItems.setDate("28-02-2019");
-            addItems.setBody(jsonResponse);
-            recentItemsList.add(addItems);
-            myAdapterRecent.notifyDataSetChanged();
+            if(jsonResponse!=null && jsonResponse.length()>0) {
+                ChocoBar.builder().setBackgroundColor(Color.parseColor("#27AE60")).setActivity(MainActivity.this).setTextSize(18)
+                        .setTextColor(Color.parseColor("#FFFFFF"))
+                        .setText("Success " + jsonResponse)
+                        .setDuration(ChocoBar.LENGTH_INDEFINITE).build().show();
+                RecentItems addItems = new RecentItems();
+                addItems.setTitle("Document");
+                addItems.setImage(R.drawable.img_two);
+                addItems.setDate("28-02-2019");
+                addItems.setBody(jsonResponse);
+                recentItemsList.add(addItems);
+                myAdapterRecent.notifyDataSetChanged();
+            }
+            else {
+                final Snackbar chocoBar = ChocoBar.builder().setBackgroundColor(Color.parseColor("#FF9800"))  .setActivity(MainActivity.this).setTextSize(18)
+                        .setTextColor(Color.parseColor("#FFFFFF")).setText("There was a problem while processing the image. Please Try Again.")
+                        .setDuration(ChocoBar.LENGTH_INDEFINITE).build().setActionTextColor(Color.parseColor("#FFFFFF"));
+                chocoBar.setAction("Try Again",new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        pDialog.show();
+                        new CallPython(bitmap).execute();
+                    }
+                });
+                chocoBar.show();
+            }
             super.onPostExecute(o);
         }
     }
