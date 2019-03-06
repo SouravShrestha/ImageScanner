@@ -64,7 +64,7 @@
         android:layout_width="match_parent"
         android:layout_height="40dp"
         android:layout_below="@+id/tWant"
-        android:layout_centerVertical="false"
+        android:layout_centerVertical="true"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
         android:layout_marginBottom="15dp"
@@ -75,17 +75,34 @@
             android:id="@+id/editDocTitle"
             fontPath="fonts/roboto_regular.ttf"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
+            android:layout_toStartOf="@+id/tViewImage"
             android:background="@android:color/transparent"
             android:ems="10"
             android:inputType="textCapSentences|textMultiLine"
+            android:maxLength="30"
             android:text="Document Title"
             android:textAlignment="viewStart"
             android:textColor="@android:color/black"
             android:textCursorDrawable="@null"
             android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/tViewImage"
+            fontPath="fonts/Roboto-Bold.ttf"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="5dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="5dp"
+            android:background="@drawable/buttonviewall"
+            android:text="Show Image"
+            android:textAllCaps="false"
+            android:textColor="@color/white" />
     </RelativeLayout>
 
     <RelativeLayout

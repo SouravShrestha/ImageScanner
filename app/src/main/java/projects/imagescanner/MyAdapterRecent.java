@@ -1,7 +1,10 @@
 package projects.imagescanner;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,7 +33,7 @@ public class MyAdapterRecent extends RecyclerView.Adapter<MyAdapterRecent.MyView
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder myViewHolder, int i) {
-        myViewHolder.image.setImageResource(list.get(i).getImage());
+        myViewHolder.image.setImageBitmap(decodeBase64(list.get(i).getImage()));
         myViewHolder.title.setText(list.get(i).getTitle());
         myViewHolder.date.setText(list.get(i).getDate());
     }
@@ -42,6 +45,11 @@ public class MyAdapterRecent extends RecyclerView.Adapter<MyAdapterRecent.MyView
 
     public void setClickListener(ItemClickListener itemClickListener) {
         this.clickListener = itemClickListener;
+    }
+
+    public static Bitmap decodeBase64(String input) {
+        byte[] decodedByte = Base64.decode(input, 0);
+        return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
@@ -61,7 +69,7 @@ public class MyAdapterRecent extends RecyclerView.Adapter<MyAdapterRecent.MyView
 
         @Override
         public void onClick(View v) {
-            if (clickListener != null) clickListener.onClick(v, getAdapterPosition());
+            if (clickListener != null) clickListener.onClick(v, getAdapterPosition(),image);
         }
     }
 }

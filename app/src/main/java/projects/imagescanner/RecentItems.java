@@ -2,7 +2,7 @@ package projects.imagescanner;
 
 public class RecentItems {
 
-    int image;
+    String image;
     String title;
 
     String body;
@@ -16,11 +16,11 @@ public class RecentItems {
         this.body = body;
     }
 
-    public int getImage() {
+    public String getImage() {
         return image;
     }
 
-    public void setImage(int image) {
+    public void setImage(String image) {
         this.image = image;
     }
 

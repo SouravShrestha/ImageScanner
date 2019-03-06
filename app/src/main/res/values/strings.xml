@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Image Scanner</string>
+    <string name="preference_file_key">SharedPreferenceFileKey</string>
 </resources>

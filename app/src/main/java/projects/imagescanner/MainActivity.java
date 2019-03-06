@@ -1,7 +1,12 @@
 package projects.imagescanner;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
@@ -16,12 +21,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
-
+import java.util.Random;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
-
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -29,7 +32,9 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.derohimat.sweetalertdialog.SweetAlertDialog;
+import com.google.gson.Gson;
 import com.pd.chocobar.ChocoBar;
+import com.shashank.sony.fancytoastlib.FancyToast;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -44,7 +49,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements ItemClickListener {
 
@@ -53,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
     ImageView digital,handwritten;
     public static ArrayList<RecentItems> recentItemsList = new ArrayList<>();
     SweetAlertDialog pDialog;
+    SharedPreferences sharedPref;
+    String randomString = "Document";
     String baseUrl = "http://192.168.43.135:5000/";
     String URL = "http://192.168.43.135/index.php";
     int curr = 0 ;
@@ -61,19 +67,9 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        sharedPref = getApplicationContext().getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         recentList = findViewById(R.id.recentView);
-        RecentItems recentItem = new RecentItems();
-        recentItem.setTitle("First Document");
-        recentItem.setImage(R.drawable.img_two);
-        recentItem.setDate("28-02-2019");
-        recentItem.setBody("Hello");
-        RecentItems recentItems = new RecentItems();
-        recentItems.setTitle("Second Document");
-        recentItems.setDate("28-02-2019");
-        recentItems.setImage(R.drawable.img_one);
-        recentItems.setBody("And I want to send that variable to the activity B, so I create a new intent and use the putExtra method");
-        recentItemsList.add(recentItem);
-        recentItemsList.add(recentItems);
         recentList.setHasFixedSize(true);
         recentList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         myAdapterRecent = new MyAdapterRecent(recentItemsList);
@@ -85,6 +81,7 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
         pDialog.getProgressHelper().setBarColor(Color.parseColor("#EB5757"));
         pDialog.setTitleText("Your File Is Being Processed.!");
         pDialog.setCancelable(false);
+        loadSavedItems();
         digital.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -106,6 +103,17 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
                 baseUrl = "http://192.168.43.135:5000/";
             }
         });
+    }
+
+    private void loadSavedItems() {
+
+        Map<String, ?> allEntries = sharedPref.getAll();
+        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
+            Gson gson = new Gson();
+            RecentItems obj = gson.fromJson(entry.getKey(), RecentItems.class);
+            recentItemsList.add(obj);
+        }
+        myAdapterRecent.notifyDataSetChanged();
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -134,18 +142,27 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
     }
 
     @Override
-    public void onClick(View view, int position) {
+    public void onClick(View view, int position, ImageView imageView) {
         RecentItems passingList = recentItemsList.get(position);
         String passingTitle = passingList.getTitle();
         String passingDate = passingList.getDate();
         String passingBody = passingList.getBody();
+        String passingImage =passingList.getImage();
         ArrayList<String> listPassed = new ArrayList<>();
         listPassed.add(passingTitle);
         listPassed.add(passingDate);
         listPassed.add(passingBody);
         listPassed.add(String.valueOf(position));
+        listPassed.add(passingImage);
         Intent goToEdit = new Intent(this, EditOrSaveActivity.class);
-        goToEdit.putExtra("passedValues",listPassed);
+        Bundle bundle = new Bundle();
+        bundle.putStringArrayList("passedValues",listPassed);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageInByte = baos.toByteArray();
+        bundle.putByteArray("img",imageInByte);
+        goToEdit.putExtras(bundle);
         startActivity(goToEdit);
     }
 
@@ -165,7 +182,6 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
             @Override
             public void onErrorResponse(VolleyError error) {
                 pDialog.hide();
-//                Toast.makeText(MainActivity.this, error + "", Toast.LENGTH_SHORT).show();
                 final Snackbar chocoBar = ChocoBar.builder().setBackgroundColor(Color.parseColor("#F44336"))  .setActivity(MainActivity.this).setTextSize(18)
                         .setTextColor(Color.parseColor("#FFFFFF")).setText("Unable To Connect To Server. Please Check Your Connection!")
                         .setDuration(ChocoBar.LENGTH_INDEFINITE).build().setActionTextColor(Color.parseColor("#FFFFFF"));
@@ -179,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
             }
         }) {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
+            protected Map<String, String> getParams() {
                 String image = getStringImage(bitmap);
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("IMG", image);
@@ -245,17 +261,14 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
         protected void onPostExecute(Object o) {
             pDialog.hide();
             if(jsonResponse!=null && jsonResponse.length()>0) {
-                ChocoBar.builder().setBackgroundColor(Color.parseColor("#27AE60")).setActivity(MainActivity.this).setTextSize(18)
-                        .setTextColor(Color.parseColor("#FFFFFF"))
-                        .setText("Success " + jsonResponse)
-                        .setDuration(ChocoBar.LENGTH_INDEFINITE).build().show();
+                FancyToast.makeText(getApplicationContext(),"Processed Successfully",FancyToast.LENGTH_LONG,FancyToast.SUCCESS,false).show();
                 RecentItems addItems = new RecentItems();
-                addItems.setTitle("Document");
-                addItems.setImage(R.drawable.img_two);
-                addItems.setDate("28-02-2019");
+                randomString = "Document_" + getRandomString();
+                addItems.setTitle(randomString);
+                addItems.setImage(getStringImage(bitmap));
+                addItems.setDate(new SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(new Date()));
                 addItems.setBody(jsonResponse);
-                recentItemsList.add(addItems);
-                myAdapterRecent.notifyDataSetChanged();
+                commitShared(addItems);
             }
             else {
                 final Snackbar chocoBar = ChocoBar.builder().setBackgroundColor(Color.parseColor("#FF9800"))  .setActivity(MainActivity.this).setTextSize(18)
@@ -287,5 +300,26 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
             }
         }
         return output.toString();
+    }
+
+    private void commitShared(RecentItems recentItems){
+        Gson gson = new Gson();
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(gson.toJson(recentItems),randomString);
+        editor.commit();
+        recentItemsList.add(recentItems);
+        myAdapterRecent.notifyDataSetChanged();
+    }
+
+    protected String getRandomString() {
+        String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        StringBuilder salt = new StringBuilder();
+        Random rnd = new Random();
+        while (salt.length() < 3) {
+            int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+            salt.append(SALTCHARS.charAt(index));
+        }
+        String saltStr = salt.toString();
+        return saltStr;
     }
 }
