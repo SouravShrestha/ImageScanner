@@ -22,6 +22,7 @@
             <ImageView
                 android:id="@+id/nav"
                 android:layout_width="20dp"
+                android:foreground="?selectableItemBackground"
                 android:layout_height="20dp"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="15dp"
@@ -44,6 +45,7 @@
                 android:id="@+id/about"
                 android:layout_width="25dp"
                 android:layout_height="25dp"
+                android:foreground="?selectableItemBackground"
                 android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="10dp"
@@ -116,6 +118,7 @@
                 android:background="@drawable/ellipse"
                 android:elevation="1dp"
                 android:padding="25dp"
+                android:foreground="?selectableItemBackground"
                 app:srcCompat="@drawable/digital" />
 
         </LinearLayout>
@@ -145,6 +148,7 @@
                 android:layout_gravity="center_horizontal"
                 android:background="@drawable/ellipse"
                 android:elevation="1dp"
+                android:foreground="?selectableItemBackground"
                 android:padding="25dp"
                 app:srcCompat="@drawable/handwritten" />
 
