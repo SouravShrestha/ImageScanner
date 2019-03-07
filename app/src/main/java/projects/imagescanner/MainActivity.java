@@ -1,4 +1,5 @@
 package projects.imagescanner;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.StrictMode;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -19,8 +21,13 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import java.io.File;
 import java.util.Random;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -54,11 +61,15 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
 
     public static MyAdapterRecent myAdapterRecent;
     RecyclerView recentList;
+    Button refreshDocs;
+    GridView grid;
     ImageView digital,handwritten;
     public static ArrayList<RecentItems> recentItemsList = new ArrayList<>();
     SweetAlertDialog pDialog;
     SharedPreferences sharedPref;
+    CustomGrid adapter;
     String randomString = "Document";
+    ArrayList<String> listDocsName = new ArrayList<>();
     String baseUrl = "http://192.168.43.135:5000/";
     String URL = "http://192.168.43.135/index.php";
     int curr = 0 ;
@@ -67,8 +78,16 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+        StrictMode.setVmPolicy(builder.build());
         sharedPref = getApplicationContext().getSharedPreferences(
                 getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        loadDocs();
+        recentItemsList.clear();
+        adapter = new CustomGrid(MainActivity.this, listDocsName);
+        refreshDocs = findViewById(R.id.refreshDoc);
+        grid=(GridView)findViewById(R.id.savedDocuments);
+        grid.setAdapter(adapter);
         recentList = findViewById(R.id.recentView);
         recentList.setHasFixedSize(true);
         recentList.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -82,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
         pDialog.setTitleText("Your File Is Being Processed.!");
         pDialog.setCancelable(false);
         loadSavedItems();
+
         digital.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -103,6 +123,48 @@ public class MainActivity extends AppCompatActivity implements ItemClickListener
                 baseUrl = "http://192.168.43.135:5000/";
             }
         });
+
+        grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
+//                Toast.makeText(MainActivity.this, "You Clicked at " +listDocsName.get(position), Toast.LENGTH_SHORT).show();
+                File myFile = new File(getExternalFilesDir(null).toString()+"/"+listDocsName.get(position)+".pdf");
+                Uri uri = Uri.fromFile(myFile);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.setDataAndType(uri, "application/pdf");
+                try {
+                    startActivity(intent);
+                }
+                catch (ActivityNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        refreshDocs.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listDocsName.clear();
+                loadDocs();
+                adapter = new CustomGrid(MainActivity.this, listDocsName);
+                grid.setAdapter(adapter);
+            }
+        });
+
+    }
+
+    private void loadDocs() {
+
+        String path = getExternalFilesDir(null).toString();
+        File f = new File(path);
+        File file[] = f.listFiles();
+        for(File f1: file) {
+            listDocsName.add(f1.getName().replace(".pdf",""));
+        }
+
     }
 
     private void loadSavedItems() {
